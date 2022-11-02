@@ -10,7 +10,7 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> pd.DataFra
     # Check that this date is in the list of dates and flag if not.
     date_list = community_df['date_updated'].unique()
     if date not in date_list:
-        raise Exception(f"Please pass a date in the list of report dates: {date_list}")
+        raise Exception(f"Please choose a valid report date: {date_list}")
 
     community_df_date = community_df.loc[community_df['date_updated'] == date, :]
 
