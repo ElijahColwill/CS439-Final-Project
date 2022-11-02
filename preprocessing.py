@@ -1,18 +1,22 @@
 import pandas as pd
 
 
-def process(community_filename: str, hesitancy_df: str) -> pd.DataFrame:
+def process(community_filename: str, hesitancy_df: str, date: str) -> pd.DataFrame:
     # Read in CDC Datasets (Community Levels and Hesitancy Data)
     community_df = pd.read_csv(community_filename)
     hesitancy_df = pd.read_csv(hesitancy_df)
 
-    # Filter the community levels dataset to only consider the earliest reports closest to when the
-    # hesitancy data was collected.
-    community_df_earliest = community_df.loc[community_df['date_updated'] == min(community_df['date_updated']), :]
+    # Filter the community levels dataset to only consider the report the user specifies.
+    # Check that this date is in the list of dates and flag if not.
+    date_list = community_df['date_updated'].unique()
+    if date not in date_list:
+        raise Exception(f"Please pass a date in the list of report dates: {date_list}")
+
+    community_df_date = community_df.loc[community_df['date_updated'] == date, :]
 
     # Join the community dataset with the hesitancy dataset (inner join) using the FIPS code. Since the codes are
     # numpy.int64 type, they are automatically formatted (leading zeros are removed).
-    joined_df = community_df_earliest.set_index('county_fips'). \
+    joined_df = community_df_date.set_index('county_fips'). \
         join(hesitancy_df.set_index('FIPS Code'), how='inner')
 
     # Filter only the relevant columns from the joined dataset
