@@ -36,7 +36,7 @@ class Window(QDialog):
 
         self.setLayout(self.layout)
         self.overview_data = self.date_data
-        self.bubblechart_plot('SVI')
+        self.bubblechart_plot('Percent White')
 
     def bubblechart_plot(self, size_attribute: str):
         self.figure.clear()

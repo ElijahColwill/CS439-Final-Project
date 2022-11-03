@@ -41,6 +41,8 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFr
     ]]
 
     # Rename vaccine hesitancy columns to uniform short snake case for easier reference
+    # With the exception of percentages of racial categories so that they display is a more
+    # readable way.
     hesitancy_df_final = hesitancy_df_filtered.rename({
         'FIPS Code': 'county_fips',
         'Estimated hesitant': 'percent_hesitant',
@@ -48,12 +50,12 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFr
         'Social Vulnerability Index (SVI)': 'SVI',
         'SVI Category': 'SVI_category',
         'Percent adults fully vaccinated against COVID-19 (as of 6/10/21)': 'percent_vaccinated',
-        'Percent Hispanic': 'percent_hispanic',
-        'Percent non-Hispanic American Indian/Alaska Native': 'percent_AIAN',
-        'Percent non-Hispanic Asian': 'percent_asian',
-        'Percent non-Hispanic Black': 'percent_black',
-        'Percent non-Hispanic Native Hawaiian/Pacific Islander': 'percent_NHPI',
-        'Percent non-Hispanic White': 'percent_white',
+        'Percent Hispanic': 'Percent Hispanic',
+        'Percent non-Hispanic American Indian/Alaska Native': 'Percent American Indian/Alaska Native',
+        'Percent non-Hispanic Asian': 'Percent Asian',
+        'Percent non-Hispanic Black': 'Percent Black',
+        'Percent non-Hispanic Native Hawaiian/Pacific Islander': 'Percent Native Hawaiian/Pacific Islander',
+        'Percent non-Hispanic White': 'Percent White',
         'County Boundary': 'county_boundary',
         'State Boundary': 'state_boundary'
     }, axis='columns')

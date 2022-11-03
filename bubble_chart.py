@@ -1,42 +1,57 @@
 import math
+import warnings
 
+import numpy as np
 import pandas as pd
 from bokeh import palettes
 from matplotlib import pyplot as plt
 from matplotlib import axes
+from matplotlib.lines import Line2D
+
+from matplotlib import colors as mplcolors
+from mplcursors import cursor
 
 
-def plot(data: pd.DataFrame, ax: axes.Axes, size_attriubte: str) -> None:
-
+def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str) -> None:
+    warnings.filterwarnings('ignore')
     data = data.loc[data['county_population'] >= 25000]
     data = data.dropna()
+    data['normalized'] = (data[size_attribute] - data[size_attribute].min()) \
+                         / data[size_attribute].max() - data[size_attribute].min()
+    data.reset_index(inplace=True)
 
-    level_categories = data['community_level'].unique()
+    level_categories = ['Low', 'Medium', 'High']
     colors = palettes.cividis(len(level_categories))
     color_map = {str(level_categories[i]): colors[i] for i in range(len(level_categories))}
 
-    for level in level_categories:
-        df_category = data.loc[data['community_level'] == level]
-        ax.scatter(df_category['percent_strongly_hesitant'] + df_category['percent_hesitant'],
-                    1 - df_category['percent_vaccinated'],
-                    s=df_category[size_attriubte] * 150,
-                    c=color_map[str(level)],
-                    label=str(level),
-                    alpha=0.7)
+    ax.scatter(data['percent_strongly_hesitant'] + data['percent_hesitant'],
+                   1 - data['percent_vaccinated'],
+                   s=data['normalized'] * 150,
+                   c=[color_map[str(key)] for key in data['community_level']],
+                   alpha=0.7)
 
-    color_handles, color_labels = ax.get_legend_handles_labels()
-    legend1 = plt.legend(color_handles, color_labels, title='Community Level', loc='upper right')
+    color_handles = [Line2D([0], [0], color=color_map[level],
+                           marker='o', linestyle='none') for level in level_categories]
+    color_labels = [level for level in level_categories]
 
-    median = math.floor(len(data[size_attriubte]) / 2)
-    label_sizes = [data[size_attriubte].max() * 100,
-                   sorted(data[size_attriubte])[median] * 100,
-                   data[size_attriubte].min() * 100]
+    legend1 = ax.legend(handles=color_handles,
+                        labels=color_labels,
+                        title='Community Level',
+                        loc='upper right')
 
     for handle in legend1.legendHandles:
         handle._sizes = [50]
 
-    legend2 = plt.legend(labels=label_sizes,
-                         title=size_attriubte,
+    median = math.floor(len(data[size_attribute]) / 2)
+    label_sizes = [data[size_attribute].max() * 100,
+                   sorted(data[size_attribute])[median] * 100,
+                   max(data[size_attribute].min() * 100, 1)]
+
+    size_handles = [Line2D([0], [0], color='gray',
+                            marker='o', markersize=np.sqrt(size), linestyle='none') for size in label_sizes]
+    legend2 = plt.legend(handles=size_handles,
+                         labels=label_sizes,
+                         title=size_attribute,
                          loc='lower right',
                          labelspacing=2)
     for idx, handle in enumerate(legend2.legendHandles):
@@ -49,3 +64,19 @@ def plot(data: pd.DataFrame, ax: axes.Axes, size_attriubte: str) -> None:
     ax.add_artist(legend1)
     ax.add_artist(legend2)
     ax.set_ylim(0.2, 0.8)
+
+    cr = cursor(ax, hover=2, highlight=True)
+
+    @cr.connect('add')
+    def cr_hover(sel):
+        selected = data.iloc[sel.index, :]
+        annotation_dict = {
+            'Percent Hesitant/Strongly Hesitant':
+                f'{str(math.floor((selected["percent_strongly_hesitant"] + selected["percent_hesitant"]) * 100))}%',
+            'Percent Unvaccinated': f'{str(math.floor((1 - selected["percent_vaccinated"]) * 100))}%',
+            'Community Level': f'{str(selected["community_level"])}',
+            'Cases per 100k People': f'{str(selected["cases_100k"])}',
+            f'{size_attribute}': f'{str(math.floor(selected[size_attribute] * 100))}'
+        }
+        sel.annotation.set_text('\n'.join([f'{k}: {v}' for k, v in annotation_dict.items()]))
+        sel.annotation.set(bbox=dict(facecolor=mplcolors.to_rgba('yellow')[:-1] + (1.0,)))
