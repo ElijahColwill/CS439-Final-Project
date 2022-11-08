@@ -12,12 +12,23 @@ from matplotlib import colors as mplcolors
 from mplcursors import cursor
 
 
-def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str) -> None:
+def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str,
+         svi_min_threshold: float, svi_max_threshold: float,
+         population_threshold: float) -> None:
+
     warnings.filterwarnings('ignore')
-    data = data.loc[data['county_population'] >= 25000]
+    data = data.loc[(data['SVI'] >= svi_min_threshold) & (data['SVI'] <= svi_max_threshold)]
+    data = data.loc[data['county_population'] >= population_threshold]
     data = data.dropna()
-    data['normalized'] = (data[size_attribute] - data[size_attribute].min()) \
-                         / data[size_attribute].max() - data[size_attribute].min()
+
+    if size_attribute == 'SVI':
+        data['normalized'] = data[size_attribute]
+    else:
+        max_value = data[size_attribute].max()
+        min_value = data[size_attribute].min()
+        data['normalized'] = (data[size_attribute] - min_value) \
+                             / max_value - min_value
+
     data.reset_index(inplace=True)
 
     level_categories = ['Low', 'Medium', 'High']
@@ -43,9 +54,9 @@ def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str) -> None:
         handle._sizes = [50]
 
     median = math.floor(len(data[size_attribute]) / 2)
-    label_sizes = [data[size_attribute].max() * 100,
-                   sorted(data[size_attribute])[median] * 100,
-                   max(data[size_attribute].min() * 100, 1)]
+    label_sizes = [round(data[size_attribute].max() * 100, 2),
+                   round(sorted(data[size_attribute])[median] * 100, 2),
+                   round(max(data[size_attribute].min() * 100, 1), 2)]
 
     size_handles = [Line2D([0], [0], color='gray',
                             marker='o', markersize=np.sqrt(size), linestyle='none') for size in label_sizes]
@@ -71,6 +82,9 @@ def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str) -> None:
     def cr_hover(sel):
         selected = data.iloc[sel.index, :]
         annotation_dict = {
+            'County Name': f'{selected["county"]}',
+            'State': f'{selected["state"]}',
+            'Population': f'{selected["county_population"]}',
             'Percent Hesitant/Strongly Hesitant':
                 f'{str(math.floor((selected["percent_strongly_hesitant"] + selected["percent_hesitant"]) * 100))}%',
             'Percent Unvaccinated': f'{str(math.floor((1 - selected["percent_vaccinated"]) * 100))}%',

@@ -37,7 +37,8 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFr
         'Percent non-Hispanic Asian', 'Percent non-Hispanic Black',
         'Percent non-Hispanic Native Hawaiian/Pacific Islander',
         'Percent non-Hispanic White',
-        'County Boundary', 'State Boundary'
+        'County Boundary',
+        'State Boundary'
     ]]
 
     # Rename vaccine hesitancy columns to uniform short snake case for easier reference
@@ -50,7 +51,6 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFr
         'Social Vulnerability Index (SVI)': 'SVI',
         'SVI Category': 'SVI_category',
         'Percent adults fully vaccinated against COVID-19 (as of 6/10/21)': 'percent_vaccinated',
-        'Percent Hispanic': 'Percent Hispanic',
         'Percent non-Hispanic American Indian/Alaska Native': 'Percent American Indian/Alaska Native',
         'Percent non-Hispanic Asian': 'Percent Asian',
         'Percent non-Hispanic Black': 'Percent Black',
