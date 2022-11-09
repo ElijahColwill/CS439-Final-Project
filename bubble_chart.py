@@ -85,7 +85,7 @@ def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str,
             'County Name': f'{selected["county"]}',
             'State': f'{selected["state"]}',
             'Population': f'{selected["county_population"]}',
-            'Percent Hesitant/Strongly Hesitant':
+            'Percent Hesitant + Percent Strongly Hesitant':
                 f'{str(math.floor((selected["percent_strongly_hesitant"] + selected["percent_hesitant"]) * 100))}%',
             'Percent Unvaccinated': f'{str(math.floor((1 - selected["percent_vaccinated"]) * 100))}%',
             'Community Level': f'{str(selected["community_level"])}',
