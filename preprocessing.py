@@ -39,7 +39,8 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFr
         'Percent non-Hispanic Native Hawaiian/Pacific Islander',
         'Percent non-Hispanic White',
         'County Boundary',
-        'State Boundary'
+        'State Boundary',
+        'Geographical Point'
     ]]
 
     # Rename vaccine hesitancy columns to uniform short snake case for easier reference
@@ -58,7 +59,8 @@ def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFr
         'Percent non-Hispanic Native Hawaiian/Pacific Islander': 'Percent Native Hawaiian/Pacific Islander',
         'Percent non-Hispanic White': 'Percent White',
         'County Boundary': 'county_boundary',
-        'State Boundary': 'state_boundary'
+        'State Boundary': 'state_boundary',
+        'Geographical Point': 'point'
     }, axis='columns')
 
     # Set index of both dataframes to FIPS code in place
@@ -85,5 +87,8 @@ def process_date(community_df: pd.DataFrame, hesitancy_df: pd.DataFrame, date: s
 
     join.dropna(subset=['county_boundary'], inplace=True)
     join['county_boundary'] = gpd.GeoSeries.from_wkt(join['county_boundary'])
+
+    join.dropna(subset=['point'], inplace=True)
+    join['point'] = gpd.GeoSeries.from_wkt(join['point'])
     return join
 

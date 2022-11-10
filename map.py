@@ -4,6 +4,7 @@ import geopandas as gpd
 import numpy as np
 from geopandas import GeoDataFrame
 from matplotlib.lines import Line2D
+from mplcursors import cursor
 from shapely import wkt
 from shapely.geometry import LineString
 import matplotlib.pyplot as plt
@@ -17,7 +18,12 @@ def plot(data: pd.DataFrame, ax: axes.Axes, attribute: str, secondary: str):
     # Create state and county Geoframes
     color_key = constants.MAP_ATTRIBUTES[attribute]
     data.reset_index(inplace=True, drop=True)
+
+    county_series = gpd.GeoSeries(data['county_boundary'])
+    data['county_point'] = county_series.centroid
+
     county_boundaries = GeoDataFrame(data, geometry=data['county_boundary'])
+    county_points = GeoDataFrame(data.copy(), geometry=data['county_point'].copy())
 
     # Create color map
     data['RANGES'] = pd.qcut(data[color_key], q=constants.BINS[attribute],
@@ -39,9 +45,10 @@ def plot(data: pd.DataFrame, ax: axes.Axes, attribute: str, secondary: str):
 
     # Plot
     county_boundaries.plot(ax=ax, edgecolor='k', color=[color_map[str(key)] for key in data['RANGES']])
+    # county_points.plot(ax=ax, alpha=0, zorder=1)
 
     color_handles = [Line2D([0], [0], color=color_map[interval],
-                           marker='o', linestyle='none') for interval in intervals]
+                            marker='o', linestyle='none') for interval in intervals]
     color_labels = [interval for interval in intervals]
 
     legend1 = plt.legend(handles=color_handles,
