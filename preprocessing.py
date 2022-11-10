@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 
 
 def process(community_filename: str, hesitancy_df: str, date: str) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
@@ -80,4 +81,9 @@ def process_date(community_df: pd.DataFrame, hesitancy_df: pd.DataFrame, date: s
 
     # Join the community dataset on the passed date with the hesitancy dataset (inner join) using the FIPS code.
     # Since the codes are numpy.int64 type, they are automatically formatted (leading zeros are removed).
-    return community_df_date.join(hesitancy_df, how='inner')
+    join = community_df_date.join(hesitancy_df, how='inner')
+
+    join.dropna(subset=['county_boundary'], inplace=True)
+    join['county_boundary'] = gpd.GeoSeries.from_wkt(join['county_boundary'])
+    return join
+

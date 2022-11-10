@@ -5,8 +5,8 @@ SIZE_ATTRIBUTES = ['SVI', 'Percent Hispanic', 'Percent American Indian/Alaska Na
 MAP_ATTRIBUTES = {
     'Cases Per 100k': 'cases_100k',
     'Hospital Admissions Per 100k': 'hospital_100k',
-    'Adult Vaccination Rate (Percentage)': 'percent_vaccinated',
-    'Social Vulnerability Index (SVI)': 'SVI',
+    'Vaccination Percentage': 'percent_vaccinated',
+    'Social Vulnerability Index': 'SVI',
     'Percent Strongly Hesitant': 'percent_strongly_hesitant'
 }
 
@@ -14,9 +14,17 @@ SECONDARY_MAP_ATTRIBUTES = {
     'None': 'None',
     'Cases Per 100k': 'cases_100k',
     'Hospital Admissions Per 100k': 'hospital_100k',
-    'Adult Vaccination Rate (Percentage)': 'percent_vaccinated',
-    'Social Vulnerability Index (SVI)': 'SVI',
+    'Vaccination Percentage': 'percent_vaccinated',
+    'Social Vulnerability Index': 'SVI',
     'Percent Strongly Hesitant': 'percent_strongly_hesitant'
+}
+
+BINS = {
+    'Cases Per 100k': 7,
+    'Hospital Admissions Per 100k': 4,
+    'Adult Vaccination Rate (Percentage)': 6,
+    'Social Vulnerability Index (SVI)': 6,
+    'Percent Strongly Hesitant': 6
 }
 
 REPORT_DATES = ['2022-02-24', '2022-03-03', '2022-03-10', '2022-03-17', '2022-03-24', '2022-03-31',
