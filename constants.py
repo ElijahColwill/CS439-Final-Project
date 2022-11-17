@@ -22,8 +22,8 @@ SECONDARY_MAP_ATTRIBUTES = {
 BINS = {
     'Cases Per 100k': 7,
     'Hospital Admissions Per 100k': 4,
-    'Adult Vaccination Rate (Percentage)': 6,
-    'Social Vulnerability Index (SVI)': 6,
+    'Vaccination Percentage': 6,
+    'Social Vulnerability Index': 6,
     'Percent Strongly Hesitant': 6
 }
 
