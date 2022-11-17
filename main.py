@@ -41,6 +41,7 @@ class Window(QDialog):
         self.attribute_key = 'Cases Per 100k'
         self.state = 'Country View'
         self.secondary = 'None'
+        self.stream_attribute = 'Community Level'
 
         # Initialize bubble chart widgets
         self.size_dropdown, self.size_label, self.svi_min_slider, self.svi_min_label, \
@@ -60,6 +61,11 @@ class Window(QDialog):
                                     self.date_label, self.state_dropdown, self.state_label]
 
         self.secondary_map_widgets = [self.attribute_secondary_dropdown, self.attribute_secondary_label]
+
+        # Initialize Stream widgets
+        self.stream_dropdown, self.stream_label = self.initialize_stream_widgets()
+
+        self.stream_widgets = [self.stream_dropdown, self.stream_label]
 
         # Initialize universal widgets
         title = QLabel('COVID-19 Vaccine Hesitancy Visualization')
@@ -203,6 +209,22 @@ class Window(QDialog):
         return attribute_dropdown, attribute_label, date_dropdown, date_label, state_dropdown, \
                state_label, attribute_secondary_dropdown, attribute_secondary_label
 
+    def initialize_stream_widgets(self):
+        # Attribute Dropdown
+        stream_dropdown = QComboBox(self)
+        stream_dropdown.activated[str].connect(self.set_stream_attribute)
+        stream_dropdown.addItems(list(constants.STREAM_ATTRIBUTES.keys()))
+        stream_dropdown.setCurrentIndex(0)
+
+        # Attribute Label
+        stream_label = QLabel('Attribute Encoded by Color:')
+
+        # Build Layout
+        self.layout.addWidget(stream_label, 2, 0, 1, 4)
+        self.layout.addWidget(stream_dropdown, 3, 0, 1, 4)
+
+        return stream_dropdown, stream_label
+
     def set_size(self, text):
         self.size_attribute = text
         self.bubblechart_plot()
@@ -247,6 +269,10 @@ class Window(QDialog):
         self.secondary = text
         self.map_plot()
 
+    def set_stream_attribute(self, text):
+        self.stream_attribute = text
+        self.stream_plot()
+
     def bubblechart_plot(self):
         self.figure.clear()
 
@@ -259,7 +285,8 @@ class Window(QDialog):
             widget.hide()
 
         # STREAM WIDGETS: HIDE
-        # TODO
+        for widget in self.stream_widgets:
+            widget.hide()
 
         ax = self.figure.add_subplot(111)
         bubble_chart.plot(self.overview_data, ax, self.size_attribute,
@@ -284,10 +311,11 @@ class Window(QDialog):
             self.secondary_map_widgets[1].show()
 
         # STREAM WIDGETS: HIDE
-        # TODO
+        for widget in self.stream_widgets:
+            widget.hide()
 
         ax = self.figure.add_subplot(111)
-        map.plot(self.overview_data, ax, self.attribute_key, self.secondary)
+        map.plot(self.overview_data, ax, self.state, self.attribute_key, self.secondary)
 
         self.canvas.draw()
 
@@ -303,10 +331,11 @@ class Window(QDialog):
             widget.hide()
 
         # STREAM WIDGETS: SHOW
-        # TODO
+        for widget in self.stream_widgets:
+            widget.show()
 
         ax = self.figure.add_subplot(111)
-        stream_graph.plot(self.community_df, self.hesitancy_df, ax)
+        stream_graph.plot(self.community_df, self.stream_attribute, ax)
 
         self.canvas.draw()
 

@@ -19,6 +19,12 @@ SECONDARY_MAP_ATTRIBUTES = {
     'Percent Strongly Hesitant': 'percent_strongly_hesitant'
 }
 
+STREAM_ATTRIBUTES = {
+    'Community Level': 'community_level',
+    'Cases Per 100k': 'cases_100k',
+    'Hospitalizations Per 100k': 'hospital_100k'
+}
+
 BINS = {
     'Cases Per 100k': 7,
     'Hospital Admissions Per 100k': 4,

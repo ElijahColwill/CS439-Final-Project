@@ -5,8 +5,6 @@ import numpy as np
 from geopandas import GeoDataFrame
 from matplotlib.lines import Line2D
 from mplcursors import cursor
-from shapely import wkt
-from shapely.geometry import LineString
 import matplotlib.pyplot as plt
 from matplotlib import axes
 import pandas as pd
@@ -14,7 +12,14 @@ import constants
 from bokeh import palettes
 
 
-def plot(data: pd.DataFrame, ax: axes.Axes, attribute: str, secondary: str):
+def plot(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: str, secondary: str):
+    if state_name == 'Country View':
+        country_view(data, ax, attribute)
+    else:
+        state_view(data, ax, state_name, attribute, secondary)
+
+
+def country_view(data: pd.DataFrame, ax: axes.Axes, attribute: str):
     # Create state and county Geoframes
     color_key = constants.MAP_ATTRIBUTES[attribute]
     data.reset_index(inplace=True, drop=True)
@@ -44,8 +49,9 @@ def plot(data: pd.DataFrame, ax: axes.Axes, attribute: str, secondary: str):
     color_map['nan'] = 'lightgray'
 
     # Plot
-    county_boundaries.plot(ax=ax, edgecolor='k', color=[color_map[str(key)] for key in data['RANGES']])
-    # county_points.plot(ax=ax, alpha=0, zorder=1)
+    county_boundaries.plot(ax=ax,
+                           edgecolor=(0, 0, 0, 0.35),
+                           color=[color_map[str(key)] for key in data['RANGES']])
 
     color_handles = [Line2D([0], [0], color=color_map[interval],
                             marker='o', linestyle='none') for interval in intervals]
@@ -53,16 +59,53 @@ def plot(data: pd.DataFrame, ax: axes.Axes, attribute: str, secondary: str):
 
     legend1 = plt.legend(handles=color_handles,
                          labels=color_labels,
-                         title=attribute, loc='lower right')
+                         title=attribute,
+                         loc='lower right')
 
     for handle in legend1.legendHandles:
         handle._sizes = [50]
 
     ax.add_artist(legend1)
 
-    # Set axis settings
-    ax.set_aspect('auto')
     plt.ylim([23, 50])
     plt.xlim([-125, -67])
+    ax.set_aspect('auto')
+
+    # Set axis settings
+    plt.xlabel("Longitude", size=16)
+    plt.ylabel("Latitude", size=16)
+
+
+def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: str, secondary: str):
+    # Create state and county Geoframes
+    data.reset_index(inplace=True, drop=True)
+
+    county_series = gpd.GeoSeries(data['county_boundary'])
+    data['county_point'] = county_series.centroid
+
+    data_else = data.loc[data['state'] != state_name, :]
+    data_state = data.loc[data['state'] == state_name, :]
+
+    county_boundaries_else = GeoDataFrame(data_else, geometry=data_else['county_boundary'])
+    county_boundaries_state = GeoDataFrame(data_state, geometry=data_state['county_boundary'])
+    county_points = GeoDataFrame(data_state.copy(), geometry=data_state['county_point'].copy())
+
+    # Plot
+    county_boundaries_else.plot(ax=ax,
+                                edgecolor=(0, 0, 0, 0.35),
+                                color='lightgray')
+
+    county_boundaries_state.plot(ax=ax,
+                                 edgecolor=(0, 0, 0, 0.5),
+                                 color='lightsteelblue')
+
+    state_boundary = gpd.GeoSeries(data.loc[data['state'] == state_name, 'state_boundary'])
+    minx, miny, maxx, maxy = state_boundary.total_bounds
+    if state_name == 'Alaska':
+        maxx = -130
+    ax.set_xlim(minx - 2, maxx + 2)
+    ax.set_ylim(miny - 2, maxy + 2)
+
+    # Set axis settings
     plt.xlabel("Longitude", size=16)
     plt.ylabel("Latitude", size=16)

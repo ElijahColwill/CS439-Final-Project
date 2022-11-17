@@ -88,6 +88,9 @@ def process_date(community_df: pd.DataFrame, hesitancy_df: pd.DataFrame, date: s
     join.dropna(subset=['county_boundary'], inplace=True)
     join['county_boundary'] = gpd.GeoSeries.from_wkt(join['county_boundary'])
 
+    join.dropna(subset=['state_boundary'], inplace=True)
+    join['state_boundary'] = gpd.GeoSeries.from_wkt(join['state_boundary'])
+
     join.dropna(subset=['point'], inplace=True)
     join['point'] = gpd.GeoSeries.from_wkt(join['point'])
     return join
