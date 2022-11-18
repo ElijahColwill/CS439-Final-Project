@@ -56,17 +56,19 @@ def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str,
     median = math.floor(len(data[size_attribute]) / 2)
     label_sizes = [round(data[size_attribute].max() * 100, 2),
                    round(sorted(data[size_attribute])[median] * 100, 2),
-                   round(max(data[size_attribute].min() * 100, 1), 2)]
+                   round(max(data[size_attribute].min() * 100, 0.01), 2)]
 
     size_handles = [Line2D([0], [0], color='gray',
                             marker='o', markersize=np.sqrt(size), linestyle='none') for size in label_sizes]
+
     legend2 = plt.legend(handles=size_handles,
                          labels=label_sizes,
                          title=size_attribute,
                          loc='lower right',
                          labelspacing=2)
+
     for idx, handle in enumerate(legend2.legendHandles):
-        handle._sizes = [max(label_sizes[idx], 1)]
+        handle._sizes = [max(label_sizes[idx], 0.01)]
 
     plt.xlabel("Percentage of Adults Hesitant/Strongly Hesitant", size=16)
     plt.ylabel("Percentage of Adults Unvaccinated", size=16)

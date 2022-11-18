@@ -26,7 +26,7 @@ def plot(community_data: pd.DataFrame, attribute: str, ax: axes.Axes):
     else:
         community_data['RANGES'] = pd.qcut(community_data[column], q=6,
                                            duplicates='drop', precision=2)
-        community_data.sort_values(by='RANGES')
+        community_data.sort_values(by='RANGES', inplace=True)
 
         intervals_array = community_data['RANGES'].unique().__array__()
         for idx, interval in enumerate(intervals_array):
@@ -45,8 +45,7 @@ def plot(community_data: pd.DataFrame, attribute: str, ax: axes.Axes):
                 label_dict[str(interval)].append(len(date_data[date_data == interval]))
 
     ax.stackplot(constants.REPORT_DATES, label_dict.values(),
-                 labels=label_dict.keys(), alpha=0.8
-                 )
+                 labels=label_dict.keys(), alpha=0.8)
 
     ax.legend(loc='upper left')
     ax.set_xlabel('Report Date')

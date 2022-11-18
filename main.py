@@ -256,10 +256,10 @@ class Window(QDialog):
         self.state = text
         if self.state == 'Country View':
             self.secondary = 'None'
+            self.secondary_map_widgets[0].setCurrentIndex(0)
             self.secondary_map_widgets[0].hide()
             self.secondary_map_widgets[1].hide()
         else:
-            self.secondary_map_widgets[0].setCurrentIndex(0)
             self.secondary_map_widgets[0].show()
             self.secondary_map_widgets[1].show()
 
