@@ -42,11 +42,12 @@ class Window(QDialog):
         self.state = 'Country View'
         self.secondary = 'None'
         self.stream_attribute = 'Community Level'
+        self.view = 'County'
 
         # Initialize bubble chart widgets
         self.size_dropdown, self.size_label, self.svi_min_slider, self.svi_min_label, \
-            self.svi_max_slider, self.svi_max_label, self.population_slider, \
-            self.population_label = self.initialize_bubble_widgets()
+        self.svi_max_slider, self.svi_max_label, self.population_slider, \
+        self.population_label = self.initialize_bubble_widgets()
 
         self.bubble_widgets = [self.size_dropdown, self.size_label, self.svi_min_slider,
                                self.svi_min_label, self.svi_max_slider, self.svi_max_label,
@@ -54,13 +55,14 @@ class Window(QDialog):
 
         # Initialize map widgets
         self.attribute_dropdown, self.attribute_label, self.date_dropdown, self.date_label, \
-            self.state_dropdown, self.state_label, self.attribute_secondary_dropdown, \
-            self.attribute_secondary_label = self.initialize_map_widgets()
+        self.state_dropdown, self.state_label, self.attribute_secondary_dropdown, \
+        self.attribute_secondary_label, self.county_btn, self.state_btn = self.initialize_map_widgets()
 
         self.primary_map_widgets = [self.attribute_dropdown, self.attribute_label, self.date_dropdown,
                                     self.date_label, self.state_dropdown, self.state_label]
 
         self.secondary_map_widgets = [self.attribute_secondary_dropdown, self.attribute_secondary_label]
+        self.view_map_widgets = [self.county_btn, self.state_btn]
 
         # Initialize Stream widgets
         self.stream_dropdown, self.stream_label = self.initialize_stream_widgets()
@@ -196,6 +198,14 @@ class Window(QDialog):
         attribute_secondary_dropdown.hide()
         attribute_secondary_label.hide()
 
+        # County View Button
+        county_btn = QPushButton('County by County', self)
+        county_btn.clicked.connect(self.county_view)
+
+        # State View Button
+        state_btn = QPushButton('State by State', self)
+        state_btn.clicked.connect(self.state_view)
+
         # Build Label
         self.layout.addWidget(attribute_label, 4, 2, 1, 2)
         self.layout.addWidget(attribute_dropdown, 5, 2, 1, 2)
@@ -205,9 +215,11 @@ class Window(QDialog):
         self.layout.addWidget(state_dropdown, 3, 2, 1, 2)
         self.layout.addWidget(attribute_secondary_label, 4, 0, 1, 2)
         self.layout.addWidget(attribute_secondary_dropdown, 5, 0, 1, 2)
+        self.layout.addWidget(county_btn, 4, 0, 1, 2)
+        self.layout.addWidget(state_btn, 5, 0, 1, 2)
 
         return attribute_dropdown, attribute_label, date_dropdown, date_label, state_dropdown, \
-               state_label, attribute_secondary_dropdown, attribute_secondary_label
+               state_label, attribute_secondary_dropdown, attribute_secondary_label, county_btn, state_btn
 
     def initialize_stream_widgets(self):
         # Attribute Dropdown
@@ -224,6 +236,14 @@ class Window(QDialog):
         self.layout.addWidget(stream_dropdown, 3, 0, 1, 4)
 
         return stream_dropdown, stream_label
+
+    def county_view(self):
+        self.view = 'County'
+        self.map_plot()
+
+    def state_view(self):
+        self.view = 'State'
+        self.map_plot()
 
     def set_size(self, text):
         self.size_attribute = text
@@ -257,12 +277,6 @@ class Window(QDialog):
         if self.state == 'Country View':
             self.secondary = 'None'
             self.secondary_map_widgets[0].setCurrentIndex(0)
-            self.secondary_map_widgets[0].hide()
-            self.secondary_map_widgets[1].hide()
-        else:
-            self.secondary_map_widgets[0].show()
-            self.secondary_map_widgets[1].show()
-
         self.map_plot()
 
     def set_secondary(self, text):
@@ -281,7 +295,8 @@ class Window(QDialog):
             widget.show()
 
         # MAP WIDGETS: HIDE
-        for widget in [*self.primary_map_widgets, *self.secondary_map_widgets]:
+        for widget in [*self.primary_map_widgets, *self.view_map_widgets,
+                       *self.secondary_map_widgets]:
             widget.hide()
 
         # STREAM WIDGETS: HIDE
@@ -309,13 +324,20 @@ class Window(QDialog):
         if self.state != 'Country View':
             self.secondary_map_widgets[0].show()
             self.secondary_map_widgets[1].show()
+            self.view_map_widgets[0].hide()
+            self.view_map_widgets[1].hide()
+        else:
+            self.secondary_map_widgets[0].hide()
+            self.secondary_map_widgets[1].hide()
+            self.view_map_widgets[0].show()
+            self.view_map_widgets[1].show()
 
         # STREAM WIDGETS: HIDE
         for widget in self.stream_widgets:
             widget.hide()
 
         ax = self.figure.add_subplot(111)
-        map.plot(self.overview_data, ax, self.state, self.attribute_key, self.secondary)
+        map.plot(self.overview_data, ax, self.state, self.attribute_key, self.secondary, self.view)
 
         self.canvas.draw()
 
@@ -327,7 +349,8 @@ class Window(QDialog):
             widget.hide()
 
         # MAP WIDGETS: HIDE
-        for widget in [*self.primary_map_widgets, *self.secondary_map_widgets]:
+        for widget in [*self.primary_map_widgets, *self.view_map_widgets,
+                       *self.secondary_map_widgets]:
             widget.hide()
 
         # STREAM WIDGETS: SHOW

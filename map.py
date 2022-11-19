@@ -15,15 +15,16 @@ from matplotlib import colors as mplcolors
 import matplotlib.collections as collections
 
 
-def plot(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: str, secondary: str):
+def plot(data: pd.DataFrame, ax: axes.Axes, state_name: str,
+         attribute: str, secondary: str, view: str):
     data.reset_index(inplace=True, drop=True)
     if state_name == 'Country View':
-        country_view(data, ax, attribute)
+        country_view(data, ax, attribute, view)
     else:
         state_view(data, ax, state_name, attribute, secondary)
 
 
-def country_view(data: pd.DataFrame, ax: axes.Axes, attribute: str):
+def country_view(data: pd.DataFrame, ax: axes.Axes, attribute: str, view: str):
     # Create state and county Geoframes
     color_key = constants.MAP_ATTRIBUTES[attribute]
 
@@ -31,12 +32,14 @@ def country_view(data: pd.DataFrame, ax: axes.Axes, attribute: str):
     data['county_point'] = county_series.centroid
 
     county_boundaries = GeoDataFrame(data, geometry=data['county_boundary'])
-    county_points = GeoDataFrame(data.copy(), geometry=data['county_point'].copy())
+    if view == 'State':
+        data['KEY'] = data[color_key].groupby(data['state']).transform('mean')
+    else:
+        data['KEY'] = data[color_key]
 
     # Create color map
-    data['RANGES'] = pd.qcut(data[color_key], q=constants.BINS[attribute],
+    data['RANGES'] = pd.qcut(data['KEY'], q=constants.BINS[attribute],
                              duplicates='drop', precision=2)
-    data.sort_values(by='RANGES')
 
     intervals_array = data['RANGES'].unique().__array__()
     for idx, interval in enumerate(intervals_array):
@@ -78,7 +81,6 @@ def country_view(data: pd.DataFrame, ax: axes.Axes, attribute: str):
     # Set axis settings
     plt.xlabel("Longitude", size=16)
     plt.ylabel("Latitude", size=16)
-    plt.title("Country View", size=18)
 
 
 def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: str, secondary: str):
@@ -198,7 +200,6 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
     # Set axis settings
     plt.xlabel("Longitude", size=16)
     plt.ylabel("Latitude", size=16)
-    plt.title("State View", size=18)
 
     # Set up cursor
     cr = cursor(ax, hover=2, highlight=True)
@@ -221,7 +222,7 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
             'Cases per 100k People': f'{str(selected["cases_100k"])}',
         }
         if secondary != 'None':
-            annotation_dict[str(secondary)] = f'{str(math.floor(selected[secondary_attribute]))}'
+            annotation_dict[str(secondary)] = f'{str(selected[secondary_attribute])}'
 
         sel.annotation.set_text('\n'.join([f'{k}: {v}' for k, v in annotation_dict.items()]))
         sel.annotation.set(bbox=dict(facecolor=mplcolors.to_rgba('yellow')[:-1] + (1.0,)))
