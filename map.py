@@ -221,8 +221,6 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
             'Community Level': f'{str(selected["community_level"])}',
             'Cases per 100k People': f'{str(selected["cases_100k"])}',
         }
-        if secondary != 'None':
-            annotation_dict[str(secondary)] = f'{str(selected[secondary_attribute])}'
 
         sel.annotation.set_text('\n'.join([f'{k}: {v}' for k, v in annotation_dict.items()]))
         sel.annotation.set(bbox=dict(facecolor=mplcolors.to_rgba('yellow')[:-1] + (1.0,)))
