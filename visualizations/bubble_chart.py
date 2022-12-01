@@ -53,29 +53,32 @@ def plot(data: pd.DataFrame, ax: axes.Axes, size_attribute: str,
     for handle in legend1.legendHandles:
         handle._sizes = [50]
 
-    median = math.floor(len(data[size_attribute]) / 2)
-    label_sizes = [round(data[size_attribute].max() * 100, 2),
-                   round(sorted(data[size_attribute])[median] * 100, 2),
-                   round(max(data[size_attribute].min() * 100, 0.01), 2)]
+    if len(data):
+        median = math.floor(len(data[size_attribute]) / 2)
+        label_sizes = [round(data[size_attribute].max() * 100, 2),
+                       round(sorted(data[size_attribute])[median] * 100, 2),
+                       round(max(data[size_attribute].min() * 100, 0.01), 2)]
 
-    size_handles = [Line2D([0], [0], color='gray',
-                            marker='o', markersize=np.sqrt(size), linestyle='none') for size in label_sizes]
+        size_handles = [Line2D([0], [0], color='gray',
+                                marker='o', markersize=np.sqrt(size), linestyle='none') for size in label_sizes]
 
-    legend2 = plt.legend(handles=size_handles,
-                         labels=label_sizes,
-                         title=size_attribute,
-                         loc='lower right',
-                         labelspacing=2)
+        legend2 = plt.legend(handles=size_handles,
+                             labels=label_sizes,
+                             title=size_attribute,
+                             loc='lower right',
+                             labelspacing=2)
 
-    for idx, handle in enumerate(legend2.legendHandles):
-        handle._sizes = [max(label_sizes[idx], 0.01)]
+        for idx, handle in enumerate(legend2.legendHandles):
+            handle._sizes = [max(label_sizes[idx], 0.01)]
+
+        ax.add_artist(legend2)
 
     plt.xlabel("Percentage of Adults Hesitant/Strongly Hesitant", size=16)
     plt.ylabel("Percentage of Adults Unvaccinated", size=16)
     plt.title("Percentage of County Hesitant vs. Unvaccinated", size=18)
 
     ax.add_artist(legend1)
-    ax.add_artist(legend2)
+
     ax.set_ylim(0.2, 0.8)
 
     cr = cursor(ax, hover=2, highlight=True)

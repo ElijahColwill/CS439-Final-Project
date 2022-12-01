@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib import axes
 import pandas as pd
 import numpy as np
-import constants
+
+from . import constants
 
 
 def plot(community_data: pd.DataFrame, attribute: str, ax: axes.Axes):

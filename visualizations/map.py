@@ -8,11 +8,12 @@ from mplcursors import cursor
 import matplotlib.pyplot as plt
 from matplotlib import axes
 import pandas as pd
-import constants
 from bokeh import palettes
 
 from matplotlib import colors as mplcolors
 import matplotlib.collections as collections
+
+from . import constants
 
 
 def plot(data: pd.DataFrame, ax: axes.Axes, state_name: str,
@@ -95,16 +96,12 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
     data_state.reset_index(inplace=True, drop=True)
     data_counties = data_state.copy()
 
-    county_boundaries_else = GeoDataFrame(data_else, geometry=data_else['county_boundary'])
-    county_boundaries_state = GeoDataFrame(data_state, geometry=data_state['county_boundary'])
-    county_points = GeoDataFrame(data_counties, geometry=data_counties['county_point'])
-
     # Create color map
-    data_state['RANGES'] = pd.qcut(data_state[color_key], q=constants.BINS[attribute] - 1,
+    data_counties['RANGES'] = pd.qcut(data_counties[color_key], q=constants.BINS[attribute] - 1,
                                    duplicates='drop', precision=2)
-    data_state.sort_values(by='RANGES', inplace=True)
+    data_counties.sort_values(by='RANGES', inplace=True)
 
-    intervals_array = data_state['RANGES'].unique().__array__()
+    intervals_array = data_counties['RANGES'].unique().__array__()
     for idx, interval in enumerate(intervals_array):
         if isinstance(interval, float):
             if math.isnan(interval):
@@ -116,6 +113,10 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
     colors = palettes.cividis(len(intervals))
     color_map = {str(intervals[i]): colors[i] for i in range(len(intervals))}
     color_map['nan'] = 'lightgray'
+
+    county_boundaries_else = GeoDataFrame(data_else, geometry=data_else['county_boundary'])
+    county_boundaries_state = GeoDataFrame(data_state, geometry=data_state['county_boundary'])
+    county_points = GeoDataFrame(data_counties, geometry=data_counties['county_point'])
 
     # Plot Boundaries
     county_boundaries_else.plot(ax=ax,
@@ -130,8 +131,8 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
     size = 65
     secondary_attribute = constants.SECONDARY_MAP_ATTRIBUTES[secondary]
     if secondary != 'None':
-        data_state[secondary_attribute].fillna(0, inplace=True)
-        size_unscaled = data_state[secondary_attribute]
+        data_counties[secondary_attribute].fillna(0, inplace=True)
+        size_unscaled = data_counties[secondary_attribute]
 
         # Configure Scaling
         s_min = size_unscaled.min()
@@ -141,7 +142,7 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
 
     county_points.plot(ax=ax,
                        markersize=size,
-                       color=[color_map[str(key)] for key in data_state['RANGES']])
+                       color=[color_map[str(key)] for key in data_counties['RANGES']])
 
     # Legends
     color_handles = [Line2D([0], [0], color=color_map[interval],
@@ -161,15 +162,15 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
     ax.add_artist(legend1)
 
     if secondary != 'None':
-        size_unscaled = data_state[secondary_attribute]
+        size_unscaled = data_counties[secondary_attribute]
         size_unscaled.fillna(0)
         s_min = size_unscaled.min()
         s_max = size_unscaled.max()
 
-        median = math.floor(len(data_state[secondary_attribute]) / 2)
-        label_sizes = np.array([round(data_state[secondary_attribute].max(), 2),
-                                round(sorted(data_state[secondary_attribute])[median], 2),
-                                round(max(data_state[secondary_attribute].min(), 0.01), 2)])
+        median = math.floor(len(data_counties[secondary_attribute]) / 2)
+        label_sizes = np.array([round(data_counties[secondary_attribute].max(), 2),
+                                round(sorted(data_counties[secondary_attribute])[median], 2),
+                                round(max(data_counties[secondary_attribute].min(), 0.01), 2)])
 
         label_sizes_scales = ((label_sizes - s_min) / (s_max - s_min)) * 100
 
@@ -211,16 +212,29 @@ def state_view(data: pd.DataFrame, ax: axes.Axes, state_name: str, attribute: st
             return
 
         selected = data_counties.iloc[sel.index, :]
-        annotation_dict = {
-            'County Name': f'{selected["county"]}',
-            'State': f'{selected["state"]}',
-            'Population': f'{selected["county_population"]}',
-            'Percent Hesitant + Percent Strongly Hesitant':
-                f'{str(math.floor((selected["percent_strongly_hesitant"] + selected["percent_hesitant"]) * 100))}%',
-            'Percent Unvaccinated': f'{str(math.floor((1 - selected["percent_vaccinated"]) * 100))}%',
-            'Community Level': f'{str(selected["community_level"])}',
-            'Cases per 100k People': f'{str(selected["cases_100k"])}',
-        }
+        annotation_dict = {}
+
+        if selected["county"]:
+            annotation_dict['County Name'] = f'{selected["county"]}'
+
+        if selected["state"]:
+            annotation_dict['State'] = f'{selected["state"]}'
+
+        if not np.isnan(selected["county_population"]):
+            annotation_dict['Population'] = f'{selected["county_population"]}'
+
+        if not np.isnan(selected["percent_strongly_hesitant"]) and not np.isnan(selected["percent_hesitant"]):
+            annotation_dict['Percent Hesitant + Percent Strongly Hesitant'] = \
+                f'{str(math.floor((selected["percent_strongly_hesitant"] + selected["percent_hesitant"]) * 100))}%'
+
+        if not np.isnan(selected["percent_vaccinated"]):
+            annotation_dict['Percent Unvaccinated'] = f'{str(math.floor((1 - selected["percent_vaccinated"]) * 100))}%'
+
+        if selected["community_level"]:
+            annotation_dict['Community Level'] = f'{str(selected["community_level"])}'
+
+        if not np.isnan(selected["cases_100k"]):
+            annotation_dict['Cases per 100k People'] = f'{str(selected["cases_100k"])}'
 
         sel.annotation.set_text('\n'.join([f'{k}: {v}' for k, v in annotation_dict.items()]))
         sel.annotation.set(bbox=dict(facecolor=mplcolors.to_rgba('yellow')[:-1] + (1.0,)))

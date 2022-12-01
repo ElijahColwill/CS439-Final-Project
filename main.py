@@ -1,4 +1,6 @@
+import argparse
 import math
+import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont
@@ -6,14 +8,8 @@ from PyQt5.QtWidgets import QApplication, QDialog, QGridLayout, QLabel, QComboBo
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-import preprocessing
-import constants
-import bubble_chart
-import map
-import stream_graph
-import pandas as pd
-import sys
-import argparse
+from preprocessing import preprocessing
+from visualizations import bubble_chart, map, stream_graph, constants
 
 
 class Window(QDialog):
@@ -46,8 +42,8 @@ class Window(QDialog):
 
         # Initialize bubble chart widgets
         self.size_dropdown, self.size_label, self.svi_min_slider, self.svi_min_label, \
-        self.svi_max_slider, self.svi_max_label, self.population_slider, \
-        self.population_label = self.initialize_bubble_widgets()
+            self.svi_max_slider, self.svi_max_label, self.population_slider, \
+            self.population_label = self.initialize_bubble_widgets()
 
         self.bubble_widgets = [self.size_dropdown, self.size_label, self.svi_min_slider,
                                self.svi_min_label, self.svi_max_slider, self.svi_max_label,
@@ -55,8 +51,8 @@ class Window(QDialog):
 
         # Initialize map widgets
         self.attribute_dropdown, self.attribute_label, self.date_dropdown, self.date_label, \
-        self.state_dropdown, self.state_label, self.attribute_secondary_dropdown, \
-        self.attribute_secondary_label, self.county_btn, self.state_btn = self.initialize_map_widgets()
+            self.state_dropdown, self.state_label, self.attribute_secondary_dropdown, \
+            self.attribute_secondary_label, self.county_btn, self.state_btn = self.initialize_map_widgets()
 
         self.primary_map_widgets = [self.attribute_dropdown, self.attribute_label, self.date_dropdown,
                                     self.date_label, self.state_dropdown, self.state_label]
